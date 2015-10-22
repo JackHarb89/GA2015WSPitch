@@ -38,6 +38,8 @@ public:
 	// Look
 	void LookUp(float Value);
 	void LookRight(float Value);
-
+	
 	void Interact();
+
+	AActor* PickedUpItem;
 };

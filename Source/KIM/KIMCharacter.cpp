@@ -2,6 +2,7 @@
 
 #include "KIM.h"
 #include "KIMCharacter.h"
+#include "KIMInteractionActor.h"
 
 
 // Sets default values
@@ -17,6 +18,8 @@ AKIMCharacter::AKIMCharacter() {
 	bUseControllerRotationRoll = false;
 
 	BaseLookRate = 45.f;
+
+	PickedUpItem = NULL;
 
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -80,13 +83,19 @@ void AKIMCharacter::Interact() {
 	FHitResult outHit;
 	FCollisionQueryParams params;
 	params.AddIgnoredActor(this);
+	params.AddIgnoredActor(PickedUpItem);
 	FVector TraceStart = CameraComponent->GetComponentLocation();
-	FVector TraceEnd = TraceStart + (CameraComponent->GetForwardVector() * 100);
+	FVector TraceEnd = TraceStart + (CameraComponent->GetForwardVector() * 250);
 	GetWorld()->LineTraceSingleByChannel(outHit, TraceStart, TraceEnd, ECollisionChannel::ECC_WorldDynamic, params);
 	GetWorld()->GetNavigationSystem()->SimpleMoveToLocation(GetController(), outHit.Location);
-	
-	if (outHit.GetActor() != NULL && outHit.GetActor()->GetClass()->IsChildOf(AActor::StaticClass())) {
-		outHit.GetActor()->SetActorTickEnabled(true);
+	if (outHit.GetActor() != NULL && outHit.GetActor()->GetClass()->IsChildOf(AKIMInteractionActor::StaticClass())) {
+		AKIMInteractionActor* InteractionActor = ((AKIMInteractionActor*)outHit.GetActor());
+		InteractionActor->Interacted(this);
 		UE_LOG(LogClass, Warning, TEXT("Interacted with %s"), *outHit.GetActor()->GetName());
+	}
+	else if (outHit.GetActor() == NULL && PickedUpItem) {
+		PickedUpItem->DetachRootComponentFromParent(true);
+		UE_LOG(LogClass, Warning, TEXT("Droped %s"), *PickedUpItem->GetName());
+		PickedUpItem = NULL;
 	}
 }
