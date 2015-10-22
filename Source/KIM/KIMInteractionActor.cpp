@@ -32,16 +32,19 @@ void AKIMInteractionActor::Interacted(AKIMCharacter* Character) {
 
 		break;
 	case (EKIMInteractionTypes::OnCombine) :
-		if (Character->PickedUpItem && GetName().Equals("LoadingStation",ESearchCase::IgnoreCase)) {
+		if (Character->PickedUpItem && GetName().Contains("Station",ESearchCase::IgnoreCase)) {
 			PickUpAbleItem = (AKIMInteractionActor*) Character->PickedUpItem;
 			InteractionType = EKIMInteractionTypes::NONE;
 		}
-		Character->PickedUpItem->DetachRootComponentFromParent(true);
-		Character->PickedUpItem->AttachRootComponentToActor(this, NAME_None, EAttachLocation::SnapToTarget);
+		if (Character->PickedUpItem) {
+			Character->PickedUpItem->DetachRootComponentFromParent(true);
+			Character->PickedUpItem->AttachRootComponentToActor(this, NAME_None, EAttachLocation::SnapToTarget);
+			Character->PickedUpItem = NULL;
+		}
 		Activated();
 		break;
 	case (EKIMInteractionTypes::OnPickUp) :
-		if (GetName().Equals("LoadingStation", ESearchCase::IgnoreCase)) {
+		if (GetName().Contains("Station", ESearchCase::IgnoreCase)) {
 			PickUpAbleItem->DetachRootComponentFromParent(true);
 			PickUpAbleItem->AttachRootComponentToActor(Character, NAME_None, EAttachLocation::KeepWorldPosition);
 			Character->PickedUpItem = PickUpAbleItem;
